@@ -22,7 +22,7 @@ public:
 class StandardIterator : public TaskIterator {
 private:
     std::vector<EmergencyTask*> tasks;
-    size_t currentPos;
+    int currentPos;
 
 public:
     StandardIterator(const std::vector<EmergencyTask*>& subTasks);
@@ -55,7 +55,7 @@ public:
 class DepthFirstIterator : public TaskIterator {
 private:
     std::vector<EmergencyTask*> tasks; // flat copy
-    size_t currentPos;
+    int currentPos;
 
 public:
     DepthFirstIterator(const std::vector<EmergencyTask*>& subTasks);
@@ -65,6 +65,18 @@ public:
     void next() override;
     bool isDone() const override;
     EmergencyTask* currentItem() const override;
+};
+
+// CONCRETE ITERATOR 4 (Null Iterator for Leaf Nodes)
+class NullIterator : public TaskIterator {
+public:
+    NullIterator() = default;
+    ~NullIterator() override = default;
+
+    void first() override {}
+    void next() override {}
+    bool isDone() const override { return true;}
+    EmergencyTask* currentItem() const override { return nullptr; } // nullptr because isDone() is true, no children, so not iterating anymore, so not at a current object
 };
 
 #endif
