@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+// is this a whole city, a sub sidtrict or just one ambulance?
+
 class TaskIterator;
 
 // component (so this is the base class)
