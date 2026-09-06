@@ -34,6 +34,26 @@ int main() {
     //test composite
     EmergencyMngr->sendOut(); // recursive traversal
 
+    // depth first iterator test
+    TaskIterator* dfIt = City1->createIterator();
+    for (dfIt->first(); !dfIt->isDone(); dfIt->next()) {
+        EmergencyTask* task = dfIt->currentItem();
+        if (task != nullptr) {
+            std::cout << "DF: " << task->getDescription() << std::endl;
+        }
+    }
+    delete dfIt;
+
+    // reverse iterator test
+    TaskIterator* revIt = City1->createReverseIterator();
+    for (revIt->first(); !revIt->isDone(); revIt->next()) {
+        EmergencyTask* task = revIt->currentItem();
+        if (task != nullptr) {
+            std::cout << "Reverse: " << task->getDescription() << std::endl;
+        }
+    }
+    delete revIt;
+
     delete EmergencyMngr;
 
     return 0;
