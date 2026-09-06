@@ -31,7 +31,7 @@ public:
     dispatchAmbulance(const std::string& desc) : EmergencyTask(desc) {}
     ~dispatchAmbulance() override = default;
 
-    void sendOut() override {}
+    void sendOut();
     
     TaskIterator* createIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
     TaskIterator* createReverseIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
@@ -39,17 +39,17 @@ public:
 
 };
 
-// COMPOSITE
+// COMPOSITE (so vector of )
 class IncidentGroup : public EmergencyTask { // so let's say IncidentGroup* fireIncident = new IncidentGroup("Fire");
 private:
     std::vector<EmergencyTask*> children; 
 
 public:
     IncidentGroup(const std::string& desc) : EmergencyTask(desc) {}
-    ~IncidentGroup() override {}
-    void sendOut() override {}
-    void add(EmergencyTask* task) override {}
-    void remove(EmergencyTask* task) override { }
+    ~IncidentGroup() override;
+    void sendOut() override;
+    void add(EmergencyTask* task) override;
+    void remove(EmergencyTask* task) override;
 
     TaskIterator* createIterator() override;
     TaskIterator* createReverseIterator() override;
