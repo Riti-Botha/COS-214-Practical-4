@@ -1,0 +1,58 @@
+#ifndef COMPOSITE_H
+#define COMPOSITE_H
+#include "Iterator.h"
+#include <string>
+#include <vector>
+
+class TaskIterator;
+
+// component (so this is the base class)
+class EmergencyTask {
+protected:
+    std::string description;
+ 
+public:
+    EmergencyTask(const std::string& desc) : description(desc) {}
+    virtual ~EmergencyTask() = default; 
+
+    virtual void sendOut() = 0; 
+    virtual void add(EmergencyTask* task) {}
+    virtual void remove(EmergencyTask* task) {}
+
+    virtual std::string getDescription() const { return description; }
+    virtual TaskIterator* createIterator() = 0; 
+    virtual TaskIterator* createReverseIterator() = 0;
+
+};
+
+// LEAF (individual emergency action)
+class dispatchAmbulance : public EmergencyTask {
+public:
+    dispatchAmbulance(const std::string& desc) : EmergencyTask(desc) {}
+    ~dispatchAmbulance() override = default;
+
+    void sendOut() override {}
+    
+    TaskIterator* createIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
+    TaskIterator* createReverseIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
+
+
+};
+
+// COMPOSITE
+class IncidentGroup : public EmergencyTask { // so let's say IncidentGroup* fireIncident = new IncidentGroup("Fire");
+private:
+    std::vector<EmergencyTask*> children; 
+
+public:
+    IncidentGroup(const std::string& desc) : EmergencyTask(desc) {}
+    ~IncidentGroup() override {}
+    void sendOut() override {}
+    void add(EmergencyTask* task) override {}
+    void remove(EmergencyTask* task) override { }
+
+    TaskIterator* createIterator() override;
+    TaskIterator* createReverseIterator() override;
+};
+
+#endif
