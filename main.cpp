@@ -1,60 +1,121 @@
 #include "Composite.h"
+#include "Decorator.h"
 #include "Iterator.h"
+
 #include <iostream>
+#include <memory>
+#include <stdexcept>
+
+namespace {
+
+void printTraversal(const std::string& heading, TaskIterator* iterator) {
+    std::unique_ptr<TaskIterator> managedIterator(iterator);
+    std::cout << heading << std::endl;
+    if (!managedIterator) {
+        std::cout << "  (leaf nodes have no children to traverse)" << std::endl;
+        return;
+    }
+
+    for (managedIterator->first(); !managedIterator->isDone(); managedIterator->next()) {
+        EmergencyTask* task = managedIterator->currentItem();
+        if (task != nullptr) {
+            std::cout << "  - " << task->getDescription() << std::endl;
+        }
+    }
+}
+
+void scenarioOne(EmergencyTask* cityEmergencyManager, EmergencyAuditLog& auditLog) {
+    std::cout << "\n=== Scenario 1: coordinated power-plant fire response ===" << std::endl;
+    std::cout << "The city manager dispatches a nested incident hierarchy." << std::endl;
+
+    cityEmergencyManager->sendOut();
+
+    printTraversal("\nDepth-first incident view:",
+                   cityEmergencyManager->createIterator());
+    printTraversal("\nReverse incident view:",
+                   cityEmergencyManager->createReverseIterator());
+
+    std::cout << "\nAudit trail for the stacked dispatch decorators:" << std::endl;
+    auditLog.writeTo(std::cout);
+}
+
+void scenarioTwo(IncidentGroup* powerPlantFire, EmergencyAuditLog& auditLog) {
+    std::cout << "\n=== Scenario 2: new hazard during an active incident ===" << std::endl;
+    std::cout << "A depth-first snapshot is created before a hazmat team is added." << std::endl;
+
+    std::unique_ptr<TaskIterator> existingSnapshot(powerPlantFire->createIterator());
+    if (!existingSnapshot) {
+        throw std::runtime_error("Expected an incident group iterator.");
+    }
+
+    powerPlantFire->add(new AuditDispatchDecorator(
+        new PriorityDispatchDecorator(
+            new dispatchAmbulance("Hazmat unit to chemical storage"),
+            "P1 - escalating chemical risk"),
+        &auditLog));
+
+    bool oldSnapshotSawHazmat = false;
+    for (existingSnapshot->first(); !existingSnapshot->isDone(); existingSnapshot->next()) {
+        EmergencyTask* task = existingSnapshot->currentItem();
+        if (task != nullptr && task->getDescription().find("Hazmat") != std::string::npos) {
+            oldSnapshotSawHazmat = true;
+        }
+    }
+
+    bool freshSnapshotSawHazmat = false;
+    std::unique_ptr<TaskIterator> freshSnapshot(powerPlantFire->createIterator());
+    for (freshSnapshot->first(); !freshSnapshot->isDone(); freshSnapshot->next()) {
+        EmergencyTask* task = freshSnapshot->currentItem();
+        if (task != nullptr && task->getDescription().find("Hazmat") != std::string::npos) {
+            freshSnapshotSawHazmat = true;
+        }
+    }
+
+    std::cout << "Existing snapshot sees the new hazmat unit: "
+              << (oldSnapshotSawHazmat ? "yes" : "no") << std::endl;
+    std::cout << "Fresh snapshot sees the new hazmat unit: "
+              << (freshSnapshotSawHazmat ? "yes" : "no") << std::endl;
+
+    if (oldSnapshotSawHazmat || !freshSnapshotSawHazmat) {
+        throw std::runtime_error("The documented snapshot-addition policy was violated.");
+    }
+
+    printTraversal("\nUpdated depth-first incident view:",
+                   powerPlantFire->createIterator());
+    std::cout << "\nDispatching the updated power-plant incident:" << std::endl;
+    powerPlantFire->sendOut();
+}
+
+}  // namespace
 
 int main() {
-    EmergencyTask* EmergencyMngr = new IncidentGroup("City Emergencies");
+    try {
+        EmergencyAuditLog auditLog;
+        EmergencyTask* cityEmergencyManager = new IncidentGroup("Tshwane emergency command");
 
-    //level 1 composites in root component
-    EmergencyTask* City1 = new IncidentGroup("City 1 emergency");
-    EmergencyTask* City2 = new IncidentGroup("City 2 emergency");
+        EmergencyTask* centralDistrict = new IncidentGroup("Central district response");
+        EmergencyTask* industrialSector = new IncidentGroup("Industrial sector response");
+        IncidentGroup* powerPlantFire = new IncidentGroup("Power-plant fire incident");
 
-    // level 2 composites in each city
-    EmergencyTask* powerPlantFire = new IncidentGroup("Power plant fire emergency");
-    EmergencyTask* highwayCrash = new IncidentGroup("Highway crash emergency");
+        powerPlantFire->add(new dispatchAmbulance("Fire engine 1 to the turbine hall"));
+        powerPlantFire->add(new AuditDispatchDecorator(
+            new PriorityDispatchDecorator(
+                new dispatchAmbulance("Rescue ambulance to the turbine hall"),
+                "P1 - trapped workers"),
+            &auditLog));
 
-    // level 3 leaves
-    EmergencyTask* fireTruck1 = new dispatchAmbulance("Truck 1 to power plant");
-    EmergencyTask* fireTruck2 = new dispatchAmbulance("Truck 2 to power plant");
-    EmergencyTask* ambulance1 = new dispatchAmbulance("Ambulance 1 to highway");
-    EmergencyTask* ambulance2 = new dispatchAmbulance("Ambulance 2 to highway");
+        industrialSector->add(powerPlantFire);
+        centralDistrict->add(industrialSector);
+        cityEmergencyManager->add(centralDistrict);
 
+        scenarioOne(cityEmergencyManager, auditLog);
+        scenarioTwo(powerPlantFire, auditLog);
 
-    powerPlantFire->add(fireTruck1);
-    powerPlantFire->add(fireTruck2);
-    highwayCrash->add(ambulance1);
-    City1->add(ambulance2);
-
-    City1->add(powerPlantFire);
-    City2->add(highwayCrash);
-
-    EmergencyMngr->add(City1);
-    EmergencyMngr->add(City2);
-
-    //test composite
-    EmergencyMngr->sendOut(); // recursive traversal
-
-    // depth first iterator test
-    TaskIterator* dfIt = City1->createIterator();
-    for (dfIt->first(); !dfIt->isDone(); dfIt->next()) {
-        EmergencyTask* task = dfIt->currentItem();
-        if (task != nullptr) {
-            std::cout << "DF: " << task->getDescription() << std::endl;
-        }
+        delete cityEmergencyManager;
+        std::cout << "\nTaskForge emergency response scenarios completed successfully." << std::endl;
+        return 0;
+    } catch (const std::exception& exception) {
+        std::cerr << "TaskForge failed: " << exception.what() << std::endl;
+        return 1;
     }
-    delete dfIt;
-
-    // reverse iterator test
-    TaskIterator* revIt = City1->createReverseIterator();
-    for (revIt->first(); !revIt->isDone(); revIt->next()) {
-        EmergencyTask* task = revIt->currentItem();
-        if (task != nullptr) {
-            std::cout << "Reverse: " << task->getDescription() << std::endl;
-        }
-    }
-    delete revIt;
-
-    delete EmergencyMngr;
-
-    return 0;
 }
