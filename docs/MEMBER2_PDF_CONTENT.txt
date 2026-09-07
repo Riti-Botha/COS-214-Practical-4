@@ -1,0 +1,186 @@
+TASKFORGE — MEMBER 2 CONTRIBUTIONS FOR FINAL PDF
+(Deon Steenkamp)
+
+This file contains everything Member 2 is responsible for in the final submission PDF,
+written so it can be pasted directly into the relevant sections. Section numbers below
+match the order required in the spec (Section 5: Submission).
+
+
+================================================================
+SECTION: GoF PARTICIPANT MAPPING (add to the shared table, State row)
+================================================================
+
+Pattern   | Participant        | Class(es)
+----------|--------------------|--------------------------------------------------------
+State     | Context            | dispatchAmbulance
+State     | State (abstract)   | TaskState
+State     | Concrete State     | PendingState, DispatchedState, EnRouteState,
+          |                    | OnSceneState, CompletedState, CancelledState
+
+
+================================================================
+SECTION: DESIGN / OWNERSHIP RATIONALE — State Pattern
+================================================================
+
+dispatchAmbulance models a single emergency-response vehicle task. Its behaviour must
+change as it moves through a realistic lifecycle, and invalid actions must be rejected
+rather than silently accepted or allowed to crash the program. This is a direct fit for
+the State pattern rather than a flag/enum with if-else checks, since the number of
+lifecycle stages and the rules between them are non-trivial (6 states, some with no
+valid outgoing transition for a given event).
+
+Lifecycle modelled: Pending -> Dispatched -> En Route -> On Scene -> Completed, with
+Cancelled reachable from Pending, Dispatched, or En Route only (a unit already
+committed on scene can no longer be cancelled).
+
+Ownership: dispatchAmbulance (the Context) owns exactly one TaskState* (currentState)
+at a time. Every transition deletes the previous state object before assigning the new
+one, and the destructor deletes whatever state is active when the object is destroyed.
+This gives a single, clear owner for each TaskState instance and avoids any possibility
+of a dangling reference to a previous state.
+
+Invalid transitions are handled by having each concrete state implement all four
+lifecycle actions (dispatch/arrive/complete/cancel): valid ones transition to the next
+state, invalid ones print a rejection message identifying the task, the attempted
+action and the current state, and leave the object's state unchanged. This satisfies
+the requirement that invalid actions or transitions be "handled sensibly" without
+resorting to type checks or a centralised if/else chain — every class only needs to
+know how to handle its own four events.
+
+
+================================================================
+SECTION: STATE DIAGRAM
+================================================================
+
+File: docs/diagrams/member2-ambulance-state-diagram.png
+
+Shows the dispatchAmbulance lifecycle: 6 states (Pending, Dispatched, En Route,
+On Scene, Completed, Cancelled), the initial pseudostate transitioning into Pending,
+valid transitions labelled with their triggering method (dispatch(), arrive(),
+complete(), cancel()), and Completed/Cancelled both converging on a shared Final node.
+Cancel() is available from Pending, Dispatched and En Route, but not from On Scene.
+
+
+================================================================
+SECTION: ACTIVITY DIAGRAM (lifecycle / conditional behaviour)
+================================================================
+
+Files:
+  docs/diagrams/member2-ambulance-lifecycle-activity.png       (main diagram)
+  docs/diagrams/member2-ambulance-lifecycle-activity-sub.png   (called sub-activity)
+
+Title: "Ambulance Lifecycle Progression"
+
+Main diagram (swimlanes: Dispatcher | dispatchAmbulance (Context)):
+Shows the Dispatcher creating a dispatchAmbulance task, then repeatedly selecting and
+issuing a lifecycle action via a called activity ("Advance Lifecycle State"), looping
+until a decision node determines the task has reached Completed or Cancelled.
+Demonstrates: actions, a decision with guards ([yes]/[no]), a loop (the [no] branch
+looping back), and a called/composite activity.
+
+Sub-activity "Advance Lifecycle State" (swimlanes: dispatchAmbulance (Context) |
+Current TaskState):
+Shows the actual delegation to the polymorphic currentState object, a decision on
+whether the requested action is valid for the current state ([valid]/[invalid]),
+the two resulting branches (transition-and-setState, or print rejection), and a merge
+node before returning control to the caller.
+Demonstrates: a second decision with guards, and a merge node.
+
+Traceability to code: every action/decision in these diagrams corresponds directly to
+State.cpp and the dispatch()/arrive()/complete()/cancel()/setState() methods on
+dispatchAmbulance in composite.cpp.
+
+
+================================================================
+SECTION: GDB BUG INVESTIGATION AND VALGRIND EVIDENCE
+================================================================
+
+Note for PDF assembly: this section is the targeted bug investigation for the State
+pattern specifically. It complements, rather than duplicates, Member 1's full-application
+Valgrind evidence (docs/member1-valgrind-evidence.pdf), which shows the final taskforge
+executable running clean end to end (140 allocs, 140 frees, 0 errors). The numbers in
+that evidence match the "Verification" step below exactly, confirming the fix holds at
+both the isolated-bug level and the full-application level. Place Member 1's screenshot
+first, then this write-up, in the final Task 5 section.
+
+Bug: memory leak in dispatchAmbulance::setState() during lifecycle transitions.
+
+Symptom:
+Running a sequence of valid lifecycle transitions (dispatch -> arrive -> arrive ->
+complete) and checking with Valgrind inside the project's Docker container reported:
+
+    ==HEAP SUMMARY==
+        in use at exit: 32 bytes in 4 blocks
+    ==LEAK SUMMARY==
+        definitely lost: 32 bytes in 4 blocks
+
+32 bytes across 4 blocks — exactly one TaskState object leaked per transition performed.
+
+Cause:
+dispatchAmbulance::setState() reassigned the currentState pointer to the new state
+object without deleting the previous one first:
+
+    void dispatchAmbulance::setState(TaskState* newState) {
+        currentState = newState;   // old currentState pointer overwritten and lost
+    }
+
+Debugging process (GDB, run inside the project's Docker container):
+A breakpoint was set on dispatchAmbulance::setState. On the first hit, currentState
+(the original PendingState) and newState (the incoming DispatchedState) were printed,
+then the assignment was stepped over and currentState printed again:
+
+    Breakpoint 1, dispatchAmbulance::setState (this=0x..., newState=0x...39320) at composite.cpp:17
+    17          currentState = newState;
+    $1 = (TaskState *) 0x...382f0    <- original PendingState
+    $2 = (TaskState *) 0x...39320    <- incoming DispatchedState
+    (next)
+    $3 = (TaskState *) 0x...39320    <- currentState now points here;
+                                         0x...382f0 is never referenced again
+
+This matched Valgrind's reported loss record for the PendingState allocation exactly,
+confirming the cause.
+
+Correction:
+    void dispatchAmbulance::setState(TaskState* newState) {
+        delete currentState;
+        currentState = newState;
+    }
+
+Verification:
+Re-running Valgrind (in Docker) against the same transition sequence, and separately
+against the full taskforge executable and its runtime scenarios, both reported:
+
+    ==HEAP SUMMARY==
+        in use at exit: 0 bytes in 0 blocks
+    ==ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+All GDB and Valgrind evidence above was reproduced inside the project's supplied
+Docker environment (taskforge-env), not just on the host machine, per Rule 10.
+
+
+================================================================
+SECTION: TEAM CONTRIBUTION STATEMENT (Member 2 paragraph)
+================================================================
+
+Member 2 (Deon Steenkamp) implemented the State pattern governing the dispatchAmbulance
+lifecycle (TaskState hierarchy: Pending, Dispatched, En Route, On Scene, Completed,
+Cancelled), with dispatchAmbulance acting as the Context. This included ownership and
+clean polymorphic destruction of state objects, and sensible rejection of invalid
+lifecycle actions. Member 2 also wrote the Makefile, produced the UML state diagram and
+one of the three UML Activity Diagrams (the lifecycle/conditional-behaviour diagram,
+including its called sub-activity), added the State hierarchy to the shared class
+diagram, carried out the GDB/Valgrind debugging investigation documented above, and
+assembled the final submission PDF.
+
+
+================================================================
+STILL NEEDED BEFORE FINAL PDF ASSEMBLY (not Member 2's content, tracked here as a checklist)
+================================================================
+
+[ ] Member 1: Composite + Iterator write-up, Activity Diagram, Valgrind evidence, README
+[ ] Member 3: Decorator write-up, main.cpp scenarios, object diagram, one Activity
+    Diagram, GoF participant identification, traversal-modification policy, reflection
+[ ] All members: domain description / rationale paragraph (Task 1)
+[ ] Confirm main.cpp actually calls dispatch()/arrive()/complete()/cancel() somewhere in
+    a runtime scenario before submission — this was flagged as an outstanding gap.
+[ ] GitHub repository link for the PDF
