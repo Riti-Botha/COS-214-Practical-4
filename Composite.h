@@ -5,6 +5,7 @@
 #include <vector>
 
 class TaskIterator;
+class TaskState;
 
 // component (so this is the base class)
 class EmergencyTask {
@@ -26,13 +27,27 @@ public:
 };
 
 // LEAF (individual emergency action)
+// also the CONTEXT for the State pattern: its lifecycle is delegated to currentState
 class dispatchAmbulance : public EmergencyTask {
+private:
+    TaskState* currentState;
+
 public:
-    dispatchAmbulance(const std::string& desc) : EmergencyTask(desc) {}
-    ~dispatchAmbulance() override = default;
+    dispatchAmbulance(const std::string& desc);
+    ~dispatchAmbulance() override;
 
     void sendOut();
-    
+
+    // used by TaskState subclasses to transition the context to a new state
+    void setState(TaskState* newState);
+    std::string getStateName() const;
+
+    // lifecycle actions, delegated to currentState
+    void dispatch();
+    void arrive();
+    void complete();
+    void cancel();
+
     TaskIterator* createIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
     TaskIterator* createReverseIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
 

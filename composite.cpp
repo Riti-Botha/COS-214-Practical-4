@@ -1,10 +1,42 @@
 #include "Composite.h"
 #include "Iterator.h"
+#include "State.h"
 
 #include <iostream>
 
 //emergency task
 
+dispatchAmbulance::dispatchAmbulance(const std::string& desc)
+    : EmergencyTask(desc), currentState(new PendingState()) {}
+
+dispatchAmbulance::~dispatchAmbulance() {
+    delete currentState;
+}
+
+void dispatchAmbulance::setState(TaskState* newState) {
+    delete currentState;
+    currentState = newState;
+}
+
+std::string dispatchAmbulance::getStateName() const {
+    return currentState->getStateName();
+}
+
+void dispatchAmbulance::dispatch() {
+    currentState->dispatch(this);
+}
+
+void dispatchAmbulance::arrive() {
+    currentState->arrive(this);
+}
+
+void dispatchAmbulance::complete() {
+    currentState->complete(this);
+}
+
+void dispatchAmbulance::cancel() {
+    currentState->cancel(this);
+}
 
 void dispatchAmbulance::sendOut() {
     std::cout << "\t INDIVIDUAL VEHICLE SENT OUT FOR " << description << std::endl;
