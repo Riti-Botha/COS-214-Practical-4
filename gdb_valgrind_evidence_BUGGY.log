@@ -1,0 +1,51 @@
+==23== Memcheck, a memory error detector
+==23== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==23== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==23== Command: ./state_test
+==23== 
+Initial: Pending
+	 [STATE] Test ambulance dispatched: Pending -> Dispatched
+Now: Dispatched
+	 [STATE] Test ambulance en route: Dispatched -> En Route
+Now: En Route
+	 [STATE] Test ambulance on scene: En Route -> On Scene
+Now: On Scene
+	 [STATE] Test ambulance completed: On Scene -> Completed
+Now: Completed
+==23== 
+==23== HEAP SUMMARY:
+==23==     in use at exit: 32 bytes in 4 blocks
+==23==   total heap usage: 8 allocs, 4 frees, 77,912 bytes allocated
+==23== 
+==23== 8 bytes in 1 blocks are definitely lost in loss record 1 of 4
+==23==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23==    by 0x10A7AB: dispatchAmbulance::dispatchAmbulance(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (composite.cpp:10)
+==23==    by 0x10A3AE: main (state_test.cpp:5)
+==23== 
+==23== 8 bytes in 1 blocks are definitely lost in loss record 2 of 4
+==23==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23==    by 0x10C75F: PendingState::dispatch(dispatchAmbulance*) (State.cpp:19)
+==23==    by 0x10A919: dispatchAmbulance::dispatch() (composite.cpp:25)
+==23==    by 0x10A433: main (state_test.cpp:7)
+==23== 
+==23== 8 bytes in 1 blocks are definitely lost in loss record 3 of 4
+==23==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23==    by 0x10CCA5: DispatchedState::arrive(dispatchAmbulance*) (State.cpp:40)
+==23==    by 0x10A953: dispatchAmbulance::arrive() (composite.cpp:29)
+==23==    by 0x10A49B: main (state_test.cpp:9)
+==23== 
+==23== 8 bytes in 1 blocks are definitely lost in loss record 4 of 4
+==23==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23==    by 0x10D111: EnRouteState::arrive(dispatchAmbulance*) (State.cpp:58)
+==23==    by 0x10A953: dispatchAmbulance::arrive() (composite.cpp:29)
+==23==    by 0x10A503: main (state_test.cpp:11)
+==23== 
+==23== LEAK SUMMARY:
+==23==    definitely lost: 32 bytes in 4 blocks
+==23==    indirectly lost: 0 bytes in 0 blocks
+==23==      possibly lost: 0 bytes in 0 blocks
+==23==    still reachable: 0 bytes in 0 blocks
+==23==         suppressed: 0 bytes in 0 blocks
+==23== 
+==23== For lists of detected and suppressed errors, rerun with: -s
+==23== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)

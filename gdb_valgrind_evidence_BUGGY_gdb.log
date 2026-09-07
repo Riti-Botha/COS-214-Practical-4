@@ -1,0 +1,23 @@
+warning: Error disabling address space randomization: Operation not permitted
+Breakpoint 1 at 0x2870: file composite.cpp, line 17.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+Initial: Pending
+	 [STATE] Test ambulance dispatched: Pending -> Dispatched
+
+Breakpoint 1, dispatchAmbulance::setState (this=0x609bb706b2b0, newState=0x609bb706c320) at composite.cpp:17
+17	    currentState = newState;
+$1 = (TaskState *) 0x609bb706b2f0
+$2 = (TaskState *) 0x609bb706c320
+18	}
+$3 = (TaskState *) 0x609bb706c320
+Now: Dispatched
+	 [STATE] Test ambulance en route: Dispatched -> En Route
+
+Breakpoint 1, dispatchAmbulance::setState (this=0x609bb706b2b0, newState=0x609bb706c340) at composite.cpp:17
+17	    currentState = newState;
+A debugging session is active.
+
+	Inferior 1 [process 44] will be killed.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]

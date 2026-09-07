@@ -1,0 +1,63 @@
+==102== Memcheck, a memory error detector
+==102== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==102== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==102== Command: ./taskforge
+==102== 
+
+=== Scenario 1: coordinated power-plant fire response ===
+The city manager dispatches a nested incident hierarchy.
+New emergency: Tshwane emergency command
+New emergency: Central district response
+New emergency: Industrial sector response
+New emergency: Power-plant fire incident
+	 INDIVIDUAL VEHICLE SENT OUT FOR Fire engine 1 to the turbine hall
+	 PRIORITY P1 - trapped workers: dispatch first for Rescue ambulance to the turbine hall
+	 INDIVIDUAL VEHICLE SENT OUT FOR Rescue ambulance to the turbine hall
+Completed Power-plant fire incident
+Completed Industrial sector response
+Completed Central district response
+Completed Tshwane emergency command
+
+Depth-first incident view:
+  - Central district response
+  - Industrial sector response
+  - Power-plant fire incident
+  - Fire engine 1 to the turbine hall
+  - Rescue ambulance to the turbine hall [priority: P1 - trapped workers] [audited]
+
+Reverse incident view:
+  - Central district response
+
+Audit trail for the stacked dispatch decorators:
+  1. Dispatch started: Rescue ambulance to the turbine hall [priority: P1 - trapped workers]
+  2. Dispatch completed: Rescue ambulance to the turbine hall [priority: P1 - trapped workers]
+
+=== Scenario 2: new hazard during an active incident ===
+A depth-first snapshot is created before a hazmat team is added.
+Existing snapshot sees the new hazmat unit: no
+Fresh snapshot sees the new hazmat unit: yes
+
+Updated depth-first incident view:
+  - Fire engine 1 to the turbine hall
+  - Rescue ambulance to the turbine hall [priority: P1 - trapped workers] [audited]
+  - Hazmat unit to chemical storage [priority: P1 - escalating chemical risk] [audited]
+
+Dispatching the updated power-plant incident:
+New emergency: Power-plant fire incident
+	 INDIVIDUAL VEHICLE SENT OUT FOR Fire engine 1 to the turbine hall
+	 PRIORITY P1 - trapped workers: dispatch first for Rescue ambulance to the turbine hall
+	 INDIVIDUAL VEHICLE SENT OUT FOR Rescue ambulance to the turbine hall
+	 PRIORITY P1 - escalating chemical risk: dispatch first for Hazmat unit to chemical storage
+	 INDIVIDUAL VEHICLE SENT OUT FOR Hazmat unit to chemical storage
+Completed Power-plant fire incident
+
+TaskForge emergency response scenarios completed successfully.
+==102== 
+==102== HEAP SUMMARY:
+==102==     in use at exit: 0 bytes in 0 blocks
+==102==   total heap usage: 140 allocs, 140 frees, 84,827 bytes allocated
+==102== 
+==102== All heap blocks were freed -- no leaks are possible
+==102== 
+==102== For lists of detected and suppressed errors, rerun with: -s
+==102== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
