@@ -385,43 +385,6 @@
       <div class="callout"><p><strong>Runtime verification:</strong> <code>scenarioTwo()</code> creates an iterator, adds a decorated hazmat unit, proves the old iterator does not see it, then proves a new iterator does. No removal is performed while a snapshot is active.</p></div>
     </section>
 
-    <section class="page tight" aria-labelledby="runtime-evidence">
-      <p class="eyebrow">Tasks 2, 3 and 7 - Integrated behavior</p>
-      <h2 id="runtime-evidence">Runtime scenario evidence</h2>
-      <div class="two-col">
-        <div class="card">
-          <h3>Scenario 1</h3>
-          <p>Recursively dispatches the complete city hierarchy, prints a full depth-first view, prints the power-plant units in reverse order and reports audit entries from stacked decorators.</p>
-        </div>
-        <div class="card">
-          <h3>Scenario 2</h3>
-          <p>Adds a decorated hazmat unit after taking a snapshot, compares old and fresh traversal membership, then dispatches the updated incident.</p>
-        </div>
-        <div class="card">
-          <h3>Scenario 3</h3>
-          <p>Progresses an ambulance from Pending to Completed and demonstrates three rejected actions: early completion, duplicate dispatch and cancellation after arrival on scene.</p>
-        </div>
-        <div class="card">
-          <h3>Ownership</h3>
-          <p>The command root is deleted once. Composite children, decorator chains and active State objects then deallocate recursively through virtual destructors.</p>
-        </div>
-      </div>
-
-      <pre>Reverse direct-unit view of the power-plant incident:
-  - Rescue ambulance ... [priority: P1 - trapped workers] [audited]
-  - Fire engine 1 to the turbine hall
-
-Existing snapshot sees the new hazmat unit: no
-Fresh snapshot sees the new hazmat unit: yes
-
-[REJECTED] Cannot complete ... while in state: Pending
-[STATE] Emergency evaluation ambulance dispatched: Pending -&gt; Dispatched
-[STATE] Emergency evaluation ambulance en route: Dispatched -&gt; En Route
-[STATE] Emergency evaluation ambulance on scene: En Route -&gt; On Scene
-[REJECTED] Cannot cancel ... while in state: On Scene
-[STATE] Emergency evaluation ambulance completed: On Scene -&gt; Completed</pre>
-    </section>
-
     <section class="page tight" aria-labelledby="gdb">
       <p class="eyebrow">Task 5 - Engineering investigation</p>
       <h2 id="gdb">GDB bug investigation</h2>
@@ -461,11 +424,11 @@ g++ -std=c++11 -g *.cpp -o taskforge
 Successfully built taskforge-env
 
 $ valgrind --leak-check=full --show-leak-kinds=all ./taskforge
-==30== HEAP SUMMARY:
-==30==     in use at exit: 0 bytes in 0 blocks
-==30==   total heap usage: 170 allocs, 170 frees, 85,633 bytes allocated
-==30== All heap blocks were freed -- no leaks are possible
-==30== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)</pre>
+==28== HEAP SUMMARY:
+==28==     in use at exit: 0 bytes in 0 blocks
+==28==   total heap usage: 247 allocs, 247 frees, 110,317 bytes allocated
+==28== All heap blocks were freed -- no leaks are possible
+==28== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)</pre>
 
       <div class="feature-grid">
         <div class="card"><div class="status-pass">PASS</div><p>C++11 Makefile build</p></div>

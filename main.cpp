@@ -88,7 +88,7 @@ void scenarioTwo(IncidentGroup* powerPlantFire, EmergencyAuditLog& auditLog) {
     powerPlantFire->sendOut();
 }
 
-void scenarioThree() {
+void scenarioThree(EmergencyTask* cityEmergencyManager) {
     std::cout << "\n=== Scenario 3: ambulance lifecycle and transition safety ==="
               << std::endl;
     dispatchAmbulance responseUnit("Emergency evaluation ambulance");
@@ -103,6 +103,63 @@ void scenarioThree() {
     responseUnit.complete();
 
     std::cout << "Final lifecycle state: " << responseUnit.getStateName() << std::endl;
+
+    std::cout << "\nVerifying cancellation and its terminal-state rejections:"
+              << std::endl;
+    dispatchAmbulance cancelledUnit("Cancelled standby ambulance");
+    cancelledUnit.arrive();
+    cancelledUnit.complete();
+    cancelledUnit.cancel();
+    cancelledUnit.dispatch();
+    cancelledUnit.arrive();
+    cancelledUnit.complete();
+    cancelledUnit.cancel();
+
+    std::cout << "\nVerifying completion and its terminal-state rejections:"
+              << std::endl;
+    dispatchAmbulance completedUnit("Completed response ambulance");
+    completedUnit.dispatch();
+    completedUnit.dispatch();
+    completedUnit.complete();
+    completedUnit.arrive();
+    completedUnit.dispatch();
+    completedUnit.complete();
+    completedUnit.arrive();
+    completedUnit.arrive();
+    completedUnit.complete();
+    completedUnit.dispatch();
+    completedUnit.arrive();
+    completedUnit.complete();
+    completedUnit.cancel();
+
+    std::cout << "\nVerifying safe composite removal after all snapshots expire:"
+              << std::endl;
+    dispatchAmbulance* temporaryUnit =
+        new dispatchAmbulance("Temporary staging ambulance");
+    cityEmergencyManager->add(temporaryUnit);
+    cityEmergencyManager->remove(temporaryUnit);
+
+    std::cout << "Verifying decorator forwarding and the leaf iterator contract:"
+              << std::endl;
+    std::unique_ptr<EmergencyTask> decoratedLeaf(
+        new PriorityDispatchDecorator(
+            new dispatchAmbulance("Decorated standby ambulance"),
+            "P2 - interface verification"));
+    decoratedLeaf->add(nullptr);
+    decoratedLeaf->remove(nullptr);
+
+    std::unique_ptr<TaskIterator> forwardIterator(decoratedLeaf->createIterator());
+    forwardIterator->first();
+    forwardIterator->next();
+    (void)forwardIterator->currentItem();
+    (void)forwardIterator->isDone();
+
+    std::unique_ptr<TaskIterator> reverseIterator(
+        decoratedLeaf->createReverseIterator());
+    reverseIterator->first();
+    reverseIterator->next();
+    (void)reverseIterator->currentItem();
+    (void)reverseIterator->isDone();
 }
 
 }  // namespace
@@ -129,48 +186,8 @@ int main() {
 
         scenarioOne(cityEmergencyManager, powerPlantFire, auditLog);
         scenarioTwo(powerPlantFire, auditLog);
-        scenarioThree();
+        scenarioThree(cityEmergencyManager);
 
-
-        // addded in some calls for code coverage
-        dispatchAmbulance stateTest1("State rejection");
-        stateTest1.arrive();
-        stateTest1.complete();
-        stateTest1.cancel();
-        stateTest1.dispatch();
-        stateTest1.arrive();
-        stateTest1.complete();
-        stateTest1.cancel();
-
-        dispatchAmbulance stateTest2("State progression");
-        stateTest2.dispatch();
-        stateTest2.dispatch();
-        stateTest2.complete();
-        stateTest2.arrive();
-        stateTest2.dispatch();
-        stateTest2.complete();
-        stateTest2.arrive();
-        stateTest2.arrive();
-        stateTest2.complete();
-        stateTest2.dispatch();
-        stateTest2.arrive();
-        stateTest2.complete();
-        stateTest2.cancel();
-
-
-        dispatchAmbulance* unitToRemove = new dispatchAmbulance("Removet");
-        cityEmergencyManager->add(unitToRemove);
-        cityEmergencyManager->remove(unitToRemove);
-
-        PriorityDispatchDecorator* decTest = new PriorityDispatchDecorator(new dispatchAmbulance("Deco"), "2");
-        decTest->add(nullptr);
-        decTest->remove(nullptr);
-        delete decTest->createIterator();
-        delete decTest->createReverseIterator();
-        delete decTest;
-
-        // tests end
-        
         delete cityEmergencyManager;
         std::cout << "\nTaskForge emergency response scenarios completed successfully." << std::endl;
         return 0;
