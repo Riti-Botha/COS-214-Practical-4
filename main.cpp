@@ -131,6 +131,46 @@ int main() {
         scenarioTwo(powerPlantFire, auditLog);
         scenarioThree();
 
+
+        // addded in some calls for code coverage
+        dispatchAmbulance stateTest1("State rejection");
+        stateTest1.arrive();
+        stateTest1.complete();
+        stateTest1.cancel();
+        stateTest1.dispatch();
+        stateTest1.arrive();
+        stateTest1.complete();
+        stateTest1.cancel();
+
+        dispatchAmbulance stateTest2("State progression");
+        stateTest2.dispatch();
+        stateTest2.dispatch();
+        stateTest2.complete();
+        stateTest2.arrive();
+        stateTest2.dispatch();
+        stateTest2.complete();
+        stateTest2.arrive();
+        stateTest2.arrive();
+        stateTest2.complete();
+        stateTest2.dispatch();
+        stateTest2.arrive();
+        stateTest2.complete();
+        stateTest2.cancel();
+
+
+        dispatchAmbulance* unitToRemove = new dispatchAmbulance("Removet");
+        cityEmergencyManager->add(unitToRemove);
+        cityEmergencyManager->remove(unitToRemove);
+
+        PriorityDispatchDecorator* decTest = new PriorityDispatchDecorator(new dispatchAmbulance("Deco"), "2");
+        decTest->add(nullptr);
+        decTest->remove(nullptr);
+        delete decTest->createIterator();
+        delete decTest->createReverseIterator();
+        delete decTest;
+
+        // tests end
+        
         delete cityEmergencyManager;
         std::cout << "\nTaskForge emergency response scenarios completed successfully." << std::endl;
         return 0;
