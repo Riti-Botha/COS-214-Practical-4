@@ -1,0 +1,49 @@
+@startuml
+title Emergency response reconfiguration with snapshot traversal
+
+|Incident Commander|
+start
+:Receive power-plant fire report;
+:Request current incident view;
+
+|TaskForge|
+:Create depth-first snapshot;
+:Create reverse snapshot;
+
+fork
+  :Read next depth-first task;
+  while (More tasks?) is (yes)
+    :Display task description;
+    :Read next depth-first task;
+  endwhile (no)
+fork again
+  :Dispatch nested incident group;
+  :Run task sendOut()
+  <<callBehavior>>;
+end fork
+
+|Incident Commander|
+:Chemical hazard escalates;
+:Request hazmat support;
+
+|TaskForge|
+:Create dispatchAmbulance;
+:Wrap with PriorityDispatchDecorator;
+:Stack AuditDispatchDecorator;
+:Add decorated hazmat task to incident;
+
+if (Use existing snapshot?) then (yes)
+  :Keep original membership;
+  :Do not show hazmat task;
+else (fresh snapshot)
+  :Capture updated incident membership;
+  :Show hazmat task;
+endif
+
+:Dispatch updated incident;
+:Record audit entries;
+
+|Incident Commander|
+:Review dispatch evidence;
+stop
+@enduml

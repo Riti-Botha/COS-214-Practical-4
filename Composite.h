@@ -17,8 +17,8 @@ public:
     virtual ~EmergencyTask() = default; 
 
     virtual void sendOut() = 0; 
-    virtual void add(EmergencyTask* task) {}
-    virtual void remove(EmergencyTask* task) {}
+    virtual void add(EmergencyTask*) {}
+    virtual void remove(EmergencyTask*) {}
 
     virtual std::string getDescription() const { return description; }
     virtual TaskIterator* createIterator() = 0; 
@@ -36,7 +36,7 @@ public:
     dispatchAmbulance(const std::string& desc);
     ~dispatchAmbulance() override;
 
-    void sendOut();
+    void sendOut() override;
 
     // used by TaskState subclasses to transition the context to a new state
     void setState(TaskState* newState);
@@ -48,14 +48,14 @@ public:
     void complete();
     void cancel();
 
-    TaskIterator* createIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
-    TaskIterator* createReverseIterator() override { return nullptr; } // leaves do not have children, so they return a null iterator
+    TaskIterator* createIterator() override { return new NullIterator(); }
+    TaskIterator* createReverseIterator() override { return new NullIterator(); }
 
 
 };
 
-// COMPOSITE (so vector of )
-class IncidentGroup : public EmergencyTask { // so let's say IncidentGroup* fireIncident = new IncidentGroup("Fire");
+// COMPOSITE: owns a collection of nested tasks.
+class IncidentGroup : public EmergencyTask {
 private:
     std::vector<EmergencyTask*> children; 
 

@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TaskForge - COS 214 Practical 4</title>
+  <style>
+    :root {
+      --ink: #172536;
+      --muted: #536273;
+      --navy: #163b65;
+      --teal: #087f8c;
+      --teal-soft: #e8f5f5;
+      --amber: #c36a16;
+      --amber-soft: #fff4e7;
+      --line: #d6dee7;
+      --paper: #ffffff;
+      --code: #0e1b29;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      color: var(--ink);
+      background: #eef2f6;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 10.2pt;
+      line-height: 1.46;
+    }
+
+    body {
+      width: 210mm;
+      margin: 20px auto;
+      padding: 16mm;
+      background: var(--paper);
+      box-shadow: 0 12px 38px rgba(18, 41, 65, 0.14);
+    }
+
+    h1, h2, h3, h4 { color: var(--navy); line-height: 1.15; break-after: avoid; }
+    h1 { margin: 0 0 4mm; font-size: 28pt; letter-spacing: -0.035em; }
+    h2 { margin: 0 0 4mm; font-size: 17pt; letter-spacing: -0.02em; }
+    h3 { margin: 5mm 0 2mm; font-size: 12pt; }
+    h4 { margin: 3mm 0 1mm; font-size: 10.5pt; }
+    p { margin: 0 0 3mm; }
+    ul, ol { margin: 1.5mm 0 3mm; padding-left: 6mm; }
+    li { margin-bottom: 1.2mm; }
+    a { color: var(--teal); text-decoration-thickness: 0.08em; text-underline-offset: 0.15em; }
+    strong { color: var(--ink); }
+
+    .page, figure, table, .card, .callout, pre { break-inside: avoid; }
+    .page { break-before: page; }
+    .landscape { page: landscape; }
+    .tight h3 { margin-top: 3mm; }
+
+    .eyebrow {
+      margin: 0 0 3mm;
+      color: var(--teal);
+      font-size: 8.8pt;
+      font-weight: 750;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .subtitle { max-width: 72ch; color: var(--muted); font-size: 12pt; }
+    .small { color: var(--muted); font-size: 8.5pt; }
+    .rule { height: 1px; margin: 6mm 0; background: var(--line); }
+
+    .cover {
+      min-height: 245mm;
+      display: block;
+    }
+
+    .cover > div:last-child { margin-top: 22mm; }
+
+    .cover-mark {
+      width: 17mm;
+      height: 4mm;
+      margin-bottom: 12mm;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--teal), var(--navy));
+    }
+
+    .team-grid, .feature-grid, .two-col {
+      display: grid;
+      gap: 4mm;
+    }
+
+    .team-grid { grid-template-columns: repeat(3, 1fr); margin-top: 5mm; }
+    .team-grid .card { min-height: 18mm; }
+    .feature-grid { grid-template-columns: repeat(2, 1fr); margin: 4mm 0; }
+    .two-col { grid-template-columns: repeat(2, 1fr); }
+
+    .card {
+      padding: 4mm;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fbfcfe;
+    }
+
+    .card h3 { margin-top: 0; }
+    .person { font-weight: 700; color: var(--navy); }
+    .role { color: var(--muted); font-size: 8.8pt; }
+
+    .callout {
+      margin: 4mm 0;
+      padding: 4mm 5mm;
+      border-left: 4px solid var(--teal);
+      border-radius: 2px 7px 7px 2px;
+      background: var(--teal-soft);
+    }
+
+    .callout.warning { border-left-color: var(--amber); background: var(--amber-soft); }
+    .callout p:last-child { margin-bottom: 0; }
+
+    table { width: 100%; margin: 3mm 0 6mm; border-collapse: collapse; font-size: 9pt; }
+    thead { display: table-header-group; }
+    th {
+      padding: 2.4mm;
+      color: #fff;
+      background: var(--navy);
+      font-size: 8.2pt;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    td { padding: 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+    tbody tr:nth-child(even) { background: #f6f8fb; }
+
+    figure { margin: 4mm 0 0; text-align: center; }
+    figure img { display: block; max-width: 100%; max-height: 220mm; margin: 0 auto; object-fit: contain; }
+    figcaption { margin-top: 3mm; color: var(--muted); font-size: 8.6pt; text-align: left; }
+    .landscape figure img { max-height: 165mm; }
+    .diagram-frame { padding: 3mm; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+    .diagram-main { max-height: 158mm !important; }
+    .class-page .diagram-main { max-height: 135mm !important; }
+    .class-page figure { margin-top: 2mm; }
+    .diagram-portrait { max-height: 208mm !important; }
+
+    .segment {
+      display: block;
+      width: 100%;
+      max-height: 215mm;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    pre {
+      margin: 3mm 0 4mm;
+      padding: 4mm;
+      overflow: hidden;
+      border-radius: 6px;
+      color: #e7f4ff;
+      background: var(--code);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 7.7pt;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+
+    code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.93em; }
+    .status-pass { color: #087343; font-weight: 750; }
+    .label {
+      display: inline-block;
+      margin-right: 1.5mm;
+      padding: 0.6mm 2mm;
+      border-radius: 99px;
+      color: var(--navy);
+      background: #e8eef6;
+      font-size: 7.8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    @page {
+      size: A4;
+      margin: 14mm 16mm 16mm;
+      @bottom-left { content: "COS 214 Practical 4 - TaskForge"; color: #6a7787; font-size: 8pt; }
+      @bottom-right { content: counter(page) " / " counter(pages); color: #6a7787; font-size: 8pt; }
+    }
+
+    @page landscape {
+      size: A4 landscape;
+      margin: 12mm 15mm 15mm;
+      @bottom-left { content: "COS 214 Practical 4 - TaskForge"; color: #6a7787; font-size: 8pt; }
+      @bottom-right { content: counter(page) " / " counter(pages); color: #6a7787; font-size: 8pt; }
+    }
+
+    @page:first {
+      @bottom-left { content: none; }
+      @bottom-right { content: none; }
+    }
+
+    @media print {
+      html, body { background: #fff; }
+      body { width: auto; margin: 0; padding: 0; box-shadow: none; }
+      p, li { orphans: 3; widows: 3; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="cover" aria-labelledby="title">
+      <div>
+        <div class="cover-mark"></div>
+        <p class="eyebrow">COS 214 Practical 4</p>
+        <h1 id="title">TaskForge</h1>
+        <p class="subtitle">Hierarchical emergency-response processing using Composite, Iterator, State and Decorator.</p>
+
+        <div class="rule"></div>
+
+        <h2>System description</h2>
+        <p>TaskForge models emergency-response management across a city. A command structure can contain districts, sectors, incidents and individual response vehicles. The hierarchy lets a dispatcher treat one vehicle and an entire incident group through the same <code>EmergencyTask</code> abstraction.</p>
+        <p>The system addresses four operational needs: recursive dispatch across nested teams; independent views of active work; a controlled ambulance lifecycle with rejected invalid actions; and optional responsibilities such as priority handling and audit logging that can be stacked at runtime.</p>
+
+        <div class="feature-grid">
+          <div class="card"><span class="label">Hierarchy</span><p>Command -&gt; district -&gt; sector -&gt; incident -&gt; vehicle.</p></div>
+          <div class="card"><span class="label">Traversal</span><p>Complete depth-first snapshots and reverse direct-unit views.</p></div>
+          <div class="card"><span class="label">Lifecycle</span><p>Pending through Completed or Cancelled, with invalid actions rejected.</p></div>
+          <div class="card"><span class="label">Runtime roles</span><p>Priority and audit decorators remain usable as <code>EmergencyTask</code> objects.</p></div>
+        </div>
+      </div>
+
+      <div>
+        <h2>Team</h2>
+        <div class="team-grid">
+          <div class="card"><div class="person">Riti Botha</div><div class="role">Member 1</div></div>
+          <div class="card"><div class="person">Deon Steenkamp</div><div class="role">Member 2</div></div>
+          <div class="card"><div class="person">Connor Human</div><div class="role">Member 3</div></div>
+        </div>
+        <p class="small" style="margin-top:5mm"><strong>Submission date:</strong> 8 September 2026 &nbsp; | &nbsp; <strong>Repository:</strong> <a href="https://github.com/Riti-Botha/COS-214-Practical-4">github.com/Riti-Botha/COS-214-Practical-4</a></p>
+      </div>
+    </section>
+
+    <section class="page" aria-labelledby="participants">
+      <p class="eyebrow">Task 1 - Design</p>
+      <h2 id="participants">Gang of Four participant mapping</h2>
+      <table>
+        <thead><tr><th>Pattern</th><th>Participant</th><th>TaskForge class</th></tr></thead>
+        <tbody>
+          <tr><td>Composite</td><td>Component</td><td><code>EmergencyTask</code></td></tr>
+          <tr><td>Composite</td><td>Leaf</td><td><code>dispatchAmbulance</code></td></tr>
+          <tr><td>Composite</td><td>Composite</td><td><code>IncidentGroup</code></td></tr>
+          <tr><td>Iterator</td><td>Iterator</td><td><code>TaskIterator</code></td></tr>
+          <tr><td>Iterator</td><td>ConcreteIterator</td><td><code>DepthFirstIterator</code>, <code>ReverseIterator</code>, <code>StandardIterator</code>, <code>NullIterator</code></td></tr>
+          <tr><td>Iterator</td><td>Aggregate</td><td><code>EmergencyTask</code></td></tr>
+          <tr><td>Iterator</td><td>ConcreteAggregate</td><td><code>IncidentGroup</code>, <code>dispatchAmbulance</code></td></tr>
+          <tr><td>Decorator</td><td>Component</td><td><code>EmergencyTask</code></td></tr>
+          <tr><td>Decorator</td><td>Decorator</td><td><code>EmergencyTaskDecorator</code></td></tr>
+          <tr><td>Decorator</td><td>ConcreteDecorator</td><td><code>PriorityDispatchDecorator</code>, <code>AuditDispatchDecorator</code></td></tr>
+          <tr><td>State</td><td>Context</td><td><code>dispatchAmbulance</code></td></tr>
+          <tr><td>State</td><td>State</td><td><code>TaskState</code></td></tr>
+          <tr><td>State</td><td>ConcreteState</td><td><code>PendingState</code>, <code>DispatchedState</code>, <code>EnRouteState</code>, <code>OnSceneState</code>, <code>CompletedState</code>, <code>CancelledState</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Runtime collaboration</h3>
+      <p><code>IncidentGroup</code> recursively owns other groups or leaves. Its factory methods create traversal objects without exposing the internal vector to the client. A leaf delegates lifecycle actions to its current <code>TaskState</code>. Decorators wrap any task while preserving the <code>EmergencyTask</code> interface.</p>
+      <div class="callout"><p><strong>Coherent application:</strong> the patterns meet in the runtime scenarios rather than being run as four isolated examples. Decorated vehicles live inside the composite, are discovered by iterators and participate in normal dispatch behavior; a dedicated lifecycle scenario demonstrates State transitions.</p></div>
+    </section>
+
+    <section class="page landscape class-page" aria-labelledby="class-diagram">
+      <p class="eyebrow">Task 1 - Complete UML</p>
+      <h2 id="class-diagram">UML class diagram</h2>
+      <figure class="diagram-frame">
+        <img class="diagram-main" src="../../UML_with_italics.jpg" alt="Complete TaskForge UML class diagram showing Composite, Iterator, Decorator and State participants and their relationships">
+        <figcaption><strong>Figure 1.</strong> Complete class structure. Filled diamonds identify exclusive composition ownership; hollow inheritance arrows connect concrete types to their abstractions; dashed dependencies identify iterator creation and transient State-context use.</figcaption>
+      </figure>
+    </section>
+
+    <section class="page tight" aria-labelledby="rationale">
+      <p class="eyebrow">Task 1 - Design rationale</p>
+      <h2 id="rationale">Relationships, multiplicities and ownership</h2>
+
+      <h3>Composite hierarchy</h3>
+      <p><code>IncidentGroup</code> composes zero or more <code>EmergencyTask</code> children (1 to 0..*). It owns each child exclusively, deletes all remaining children in its destructor and deletes an item when <code>remove()</code> is called. <code>dispatchAmbulance</code> and <code>IncidentGroup</code> inherit publicly from the abstract component, so client code can dispatch a leaf or a whole nested incident uniformly.</p>
+
+      <h3>Decorator ownership</h3>
+      <p><code>EmergencyTaskDecorator</code> composes exactly one wrapped task (1 to 1) and deletes it. This makes stacked decorators recursively self-cleaning. <code>AuditDispatchDecorator</code> instead holds a non-owning association to one caller-managed <code>EmergencyAuditLog</code>; zero or more audit decorators may share the same log.</p>
+
+      <h3>State ownership</h3>
+      <p><code>dispatchAmbulance</code> composes one active <code>TaskState</code>. The context deletes the old State on every transition and deletes the final State in its destructor. Concrete State classes receive the context only as a transient method parameter.</p>
+
+      <h3>Iterator lifetime</h3>
+      <p>Concrete iterators store non-owning snapshot copies of <code>EmergencyTask*</code> values (1 to 0..*). The aggregate retains ownership of the tasks. Iterator objects returned by the factories transfer to the caller and are managed with <code>std::unique_ptr&lt;TaskIterator&gt;</code>. Leaves return a <code>NullIterator</code>, allowing traversal code to terminate uniformly without exposing a container.</p>
+
+      <div class="callout warning"><p><strong>Removal contract:</strong> snapshots preserve membership across additions, but they do not extend pointee lifetime. Because <code>remove()</code> deletes a child, all active iterators are invalidated before a removal; the client must destroy them first and create fresh iterators afterward.</p></div>
+
+      <h3>Concrete domain behavior</h3>
+      <ul>
+        <li>The runtime tree contains three nested <code>IncidentGroup</code> levels below the command root before reaching response vehicles.</li>
+        <li><code>DepthFirstIterator</code> visits the complete nested structure; <code>ReverseIterator</code> presents direct incident units in reverse order; snapshots can coexist independently.</li>
+        <li><code>PriorityDispatchDecorator</code> emits an urgency instruction and <code>AuditDispatchDecorator</code> records start/completion entries. They are stacked on rescue and hazmat units.</li>
+        <li>Six concrete States enforce valid progression and explain rejected lifecycle actions.</li>
+      </ul>
+    </section>
+
+    <section class="page" aria-labelledby="object-diagram">
+      <p class="eyebrow">Task 4 - Diagram portfolio</p>
+      <h2 id="object-diagram">UML object diagram</h2>
+      <figure class="diagram-frame">
+        <img class="diagram-portrait" src="../../docs/diagrams/member3-emergency-object-diagram.png" alt="Runtime object diagram for the power-plant fire response">
+        <figcaption><strong>Figure 2.</strong> Runtime slice of the nested response hierarchy. The diagram shows three group levels below the command root, a stacked priority/audit decorator chain, the shared audit sink and an existing depth-first snapshot.</figcaption>
+      </figure>
+    </section>
+
+    <section class="page" aria-labelledby="state-diagram">
+      <p class="eyebrow">Task 4 - Diagram portfolio</p>
+      <h2 id="state-diagram">UML state diagram</h2>
+      <figure class="diagram-frame">
+        <img class="diagram-portrait" src="../../docs/diagrams/member2-ambulance-state-diagram.png" alt="State diagram for the dispatchAmbulance lifecycle">
+        <figcaption><strong>Figure 3.</strong> The <code>dispatchAmbulance</code> lifecycle begins in Pending. Valid actions advance through Dispatched, En Route and On Scene to Completed, or cancel before the unit is committed on scene. Completed and Cancelled are terminal states; invalid actions are rejected by the current State object.</figcaption>
+      </figure>
+    </section>
+
+    <section class="page landscape" aria-labelledby="activity-one">
+      <p class="eyebrow">Task 4 - Activity Diagram 1</p>
+      <h2 id="activity-one">Ambulance lifecycle progression</h2>
+      <figure class="diagram-frame">
+        <img class="diagram-main" src="../../docs/diagrams/member2-ambulance-lifecycle-activity.png" alt="Activity diagram showing the dispatcher repeatedly advancing an ambulance lifecycle">
+        <figcaption><strong>Figure 4.</strong> The dispatcher creates a Pending ambulance and repeatedly invokes the called activity <em>Advance Lifecycle State</em>. The loop ends only when the task reaches Completed or Cancelled. This workflow uses swimlanes, a loop, a decision and guards.</figcaption>
+      </figure>
+    </section>
+
+    <section class="page" aria-labelledby="activity-one-detail">
+      <p class="eyebrow">Task 4 - Called activity detail</p>
+      <h2 id="activity-one-detail">Advance Lifecycle State</h2>
+      <figure class="diagram-frame">
+        <img class="diagram-portrait" src="../../docs/diagrams/member2-ambulance-lifecycle-activity-sub.png" alt="Called activity showing State delegation, valid and invalid action branches and merge">
+        <figcaption><strong>Figure 5.</strong> The context delegates the requested action to <code>currentState</code>. A valid action selects and installs the next State; an invalid action prints a rejection. The branches merge before returning control to the caller.</figcaption>
+      </figure>
+    </section>
+
+    <section class="page" aria-labelledby="activity-two-a">
+      <p class="eyebrow">Task 4 - Activity Diagram 2</p>
+      <h2 id="activity-two-a">Emergency response reconfiguration - Part A</h2>
+      <svg class="segment" viewBox="0 0 731 760" role="img" aria-label="Top half of emergency response reconfiguration activity diagram">
+        <image href="../../docs/diagrams/member3-emergency-response-activity.png" width="731" height="1346" />
+      </svg>
+      <p class="small" style="margin-top:3mm"><strong>Figure 6A.</strong> The incident commander requests a view. TaskForge creates independent snapshots, traverses the hierarchy visibly and dispatches the nested incident in parallel using a fork/join.</p>
+      <div class="callout"><p><strong>Traceability:</strong> snapshot creation and the traversal loop map to <code>createIterator()</code>, <code>first()</code>, <code>isDone()</code>, <code>currentItem()</code> and <code>next()</code>; recursive dispatch maps to <code>IncidentGroup::sendOut()</code>.</p></div>
+    </section>
+
+    <section class="page" aria-labelledby="activity-two-b">
+      <p class="eyebrow">Task 4 - Activity Diagram 2 continued</p>
+      <h2 id="activity-two-b">Emergency response reconfiguration - Part B</h2>
+      <svg class="segment" viewBox="0 690 731 656" role="img" aria-label="Bottom half of emergency response reconfiguration activity diagram">
+        <image href="../../docs/diagrams/member3-emergency-response-activity.png" width="731" height="1346" />
+      </svg>
+      <p class="small" style="margin-top:3mm"><strong>Figure 6B.</strong> A new hazmat task is created, wrapped first with priority behavior and then audit behavior, and added at runtime. The old snapshot keeps its original membership while a new snapshot sees the addition.</p>
+      <div class="callout"><p><strong>Traceability:</strong> the workflow maps directly to <code>scenarioTwo()</code>, including decorator construction, <code>IncidentGroup::add()</code>, the old/new snapshot comparison and the updated dispatch.</p></div>
+    </section>
+
+    <section class="page" aria-labelledby="activity-three">
+      <p class="eyebrow">Task 4 - Activity Diagram 3</p>
+      <h2 id="activity-three">Recursive IncidentGroup dispatch</h2>
+      <figure class="diagram-frame">
+        <img class="diagram-portrait" src="../../Activity%20Diagram_RB.jpg" alt="Activity diagram showing IncidentGroup sendOut recursively iterating over child tasks">
+        <figcaption><strong>Figure 7.</strong> The client invokes <code>IncidentGroup::sendOut()</code>. The group loops over its children, skips null entries and calls <code>sendOut()</code> polymorphically. Nested groups repeat the workflow; leaves dispatch a vehicle. This makes the Composite recursion and loop control explicit.</figcaption>
+      </figure>
+    </section>
+
+    <section class="page tight" aria-labelledby="coverage-policy">
+      <p class="eyebrow">Tasks 3 and 4 - Design decisions</p>
+      <h2 id="coverage-policy">Workflow coverage and traversal policy</h2>
+      <table>
+        <thead><tr><th>Required notation or behavior</th><th>Where demonstrated</th></tr></thead>
+        <tbody>
+          <tr><td>Actions, decisions, guards and merges</td><td>Lifecycle called activity; emergency reconfiguration; recursive group dispatch</td></tr>
+          <tr><td>Loops</td><td>Lifecycle progression, visible iterator loop and <code>IncidentGroup</code> child loop</td></tr>
+          <tr><td>Fork/join</td><td>Emergency-response traversal and nested dispatch branches</td></tr>
+          <tr><td>Called/composite activity</td><td><em>Advance Lifecycle State</em> and its detailed activity</td></tr>
+          <tr><td>Swimlanes</td><td>Dispatcher/context, commander/TaskForge and client/group responsibilities</td></tr>
+          <tr><td>Traversal visible in a larger workflow</td><td>Emergency-response reconfiguration</td></tr>
+          <tr><td>Lifecycle conditional behavior</td><td>State validity decision and rejected-action branch</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Snapshot traversal with invalidation on removal</h3>
+      <p>Each iterator copies task pointers into a private flat vector and advances using <code>currentPos</code>. An iterator already in progress is isolated from additions: it keeps its original membership, while an iterator created afterward captures the updated tree. Multiple iterators can therefore navigate independently.</p>
+      <p>Removal has a different, deliberate policy. <code>IncidentGroup::remove()</code> immediately deletes the child. Because snapshots are non-owning, a removal invalidates every active iterator. Client code must destroy all active iterators before removal and create fresh iterators afterward. This documented invalidation policy is safe when respected and matches the implementation.</p>
+      <div class="callout"><p><strong>Runtime verification:</strong> <code>scenarioTwo()</code> creates an iterator, adds a decorated hazmat unit, proves the old iterator does not see it, then proves a new iterator does. No removal is performed while a snapshot is active.</p></div>
+    </section>
+
+    <section class="page tight" aria-labelledby="runtime-evidence">
+      <p class="eyebrow">Tasks 2, 3 and 7 - Integrated behavior</p>
+      <h2 id="runtime-evidence">Runtime scenario evidence</h2>
+      <div class="two-col">
+        <div class="card">
+          <h3>Scenario 1</h3>
+          <p>Recursively dispatches the complete city hierarchy, prints a full depth-first view, prints the power-plant units in reverse order and reports audit entries from stacked decorators.</p>
+        </div>
+        <div class="card">
+          <h3>Scenario 2</h3>
+          <p>Adds a decorated hazmat unit after taking a snapshot, compares old and fresh traversal membership, then dispatches the updated incident.</p>
+        </div>
+        <div class="card">
+          <h3>Scenario 3</h3>
+          <p>Progresses an ambulance from Pending to Completed and demonstrates three rejected actions: early completion, duplicate dispatch and cancellation after arrival on scene.</p>
+        </div>
+        <div class="card">
+          <h3>Ownership</h3>
+          <p>The command root is deleted once. Composite children, decorator chains and active State objects then deallocate recursively through virtual destructors.</p>
+        </div>
+      </div>
+
+      <pre>Reverse direct-unit view of the power-plant incident:
+  - Rescue ambulance ... [priority: P1 - trapped workers] [audited]
+  - Fire engine 1 to the turbine hall
+
+Existing snapshot sees the new hazmat unit: no
+Fresh snapshot sees the new hazmat unit: yes
+
+[REJECTED] Cannot complete ... while in state: Pending
+[STATE] Emergency evaluation ambulance dispatched: Pending -&gt; Dispatched
+[STATE] Emergency evaluation ambulance en route: Dispatched -&gt; En Route
+[STATE] Emergency evaluation ambulance on scene: En Route -&gt; On Scene
+[REJECTED] Cannot cancel ... while in state: On Scene
+[STATE] Emergency evaluation ambulance completed: On Scene -&gt; Completed</pre>
+    </section>
+
+    <section class="page tight" aria-labelledby="gdb">
+      <p class="eyebrow">Task 5 - Engineering investigation</p>
+      <h2 id="gdb">GDB bug investigation</h2>
+      <h3>Symptom</h3>
+      <p>During development, a focused ambulance transition test reported 32 bytes definitely lost in four blocks - exactly one leaked <code>TaskState</code> object for each transition performed.</p>
+      <pre>==23== HEAP SUMMARY:
+==23==     in use at exit: 32 bytes in 4 blocks
+==23== LEAK SUMMARY:
+==23==     definitely lost: 32 bytes in 4 blocks
+==23== ERROR SUMMARY: 4 errors from 4 contexts</pre>
+
+      <h3>Cause and GDB evidence</h3>
+      <p>The buggy <code>setState()</code> overwrote <code>currentState</code> without deleting the previous State. GDB was run inside Docker with a breakpoint on <code>dispatchAmbulance::setState</code>. Printing both pointers before stepping showed the original PendingState address being replaced and becoming unreachable.</p>
+      <pre>Breakpoint 1, dispatchAmbulance::setState
+  this=0x609bb706b2b0, newState=0x609bb706c320
+$1 = (TaskState *) 0x609bb706b2f0    [original PendingState]
+$2 = (TaskState *) 0x609bb706c320    [incoming DispatchedState]
+(next)
+$3 = (TaskState *) 0x609bb706c320    [currentState after assignment]</pre>
+
+      <h3>Correction and focused verification</h3>
+      <pre>void dispatchAmbulance::setState(TaskState* newState) {
+    delete currentState;
+    currentState = newState;
+}</pre>
+      <p>The focused transition test was rerun after the correction: all eight allocations were freed and Valgrind reported zero errors. The complete source evidence is retained in <code>gdb_valgrind_evidence_BUGGY.log</code>, <code>gdb_valgrind_evidence_BUGGY_gdb.log</code> and <code>gdb_valgrind_evidence_FIXED.log</code>.</p>
+    </section>
+
+    <section class="page tight" aria-labelledby="valgrind">
+      <p class="eyebrow">Tasks 5 and 6 - Final verification</p>
+      <h2 id="valgrind">Docker build and final Valgrind evidence</h2>
+      <p>The final working tree was rebuilt from the supplied <code>ubuntu:24.04</code> Dockerfile. The image installs <code>g++</code>, <code>make</code>, GDB and Valgrind; <code>make</code> compiles every translation unit with <code>-std=c++11 -g</code> and produces the required <code>taskforge</code> executable.</p>
+      <pre>$ docker build -t taskforge-env .
+...
+RUN make
+g++ -std=c++11 -g *.cpp -o taskforge
+Successfully built taskforge-env
+
+$ valgrind --leak-check=full --show-leak-kinds=all ./taskforge
+==30== HEAP SUMMARY:
+==30==     in use at exit: 0 bytes in 0 blocks
+==30==   total heap usage: 170 allocs, 170 frees, 85,633 bytes allocated
+==30== All heap blocks were freed -- no leaks are possible
+==30== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)</pre>
+
+      <div class="feature-grid">
+        <div class="card"><div class="status-pass">PASS</div><p>C++11 Makefile build</p></div>
+        <div class="card"><div class="status-pass">PASS</div><p>Three integrated runtime scenarios</p></div>
+        <div class="card"><div class="status-pass">PASS</div><p>0 bytes in use at exit</p></div>
+        <div class="card"><div class="status-pass">PASS</div><p>0 Valgrind errors</p></div>
+      </div>
+      <p class="small">Final evidence recorded on 8 September 2026 in <code>final_valgrind.log</code>. Earlier buggy/fixed State investigation logs are retained separately to preserve the debugging history.</p>
+    </section>
+
+    <section class="page tight" aria-labelledby="workflow">
+      <p class="eyebrow">Task 6 - GitHub workflow</p>
+      <h2 id="workflow">Collaboration and contribution statement</h2>
+      <p>Work was divided by pattern and tooling responsibility, then integrated through GitHub. The class diagram was co-created so each pattern shared the same domain model instead of becoming a disconnected example.</p>
+
+      <h3>Selected repository evidence</h3>
+      <table>
+        <thead><tr><th>Reference</th><th>Contribution</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td><code>f2e7247</code></td><td>Riti - Add Makefile</td><td>Established the required C++11 build and <code>taskforge</code> target.</td></tr>
+          <tr><td>PR #1 / <code>0bda198</code></td><td>Merge Member2</td><td>Integrated Deon's isolated State-pattern work into the main design.</td></tr>
+          <tr><td><code>9a4d1bd</code></td><td>Connor - Member 3 Contribution</td><td>Integrated Decorator behavior, runtime scenarios, Docker support and Member 3 diagrams.</td></tr>
+          <tr><td><code>237c42c</code></td><td>Deon - GDB/Valgrind evidence</td><td>Preserved the genuine buggy run, GDB inspection and corrected verification.</td></tr>
+          <tr><td><code>34a400d</code></td><td>Riti - final evidence assets</td><td>Added the third Activity Diagram and Valgrind submission material.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Individual contributions</h3>
+      <ul>
+        <li><strong>Riti Botha (Member 1):</strong> implemented Composite and Iterator, created the recursive dispatch Activity Diagram, prepared memory-check evidence, contributed to the class diagram, Makefile and README.</li>
+        <li><strong>Deon Steenkamp (Member 2):</strong> implemented State and its valid/invalid transitions, created the State and lifecycle Activity Diagrams, documented the GDB investigation and contributed to the class diagram and report material.</li>
+        <li><strong>Connor Human (Member 3):</strong> implemented Decorator and the integrated runtime scenarios, created the Dockerfile, object diagram and emergency-response Activity Diagram, documented GoF participants and traversal policy, and assembled the final report.</li>
+      </ul>
+
+      <h3>Integration reflection</h3>
+      <p>The Member2 branch provided a safe workspace for State development and was merged through PR #1. Later commits brought the pattern-specific work and evidence together on <code>main</code>. Final integration focused on traceability: the runtime output, diagrams, ownership policy and debugging evidence now describe the same implementation.</p>
+
+      <div class="callout"><p><strong>Repository:</strong> <a href="https://github.com/Riti-Botha/COS-214-Practical-4">https://github.com/Riti-Botha/COS-214-Practical-4</a></p></div>
+    </section>
+  </main>
+</body>
+</html>

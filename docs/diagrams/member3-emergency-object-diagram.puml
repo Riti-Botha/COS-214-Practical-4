@@ -1,0 +1,43 @@
+@startuml
+title Runtime object diagram - power-plant fire response
+skinparam objectAttributeIconSize 0
+skinparam linetype ortho
+
+object "command : IncidentGroup" as command {
+  description = Tshwane emergency command
+}
+object "district : IncidentGroup" as district {
+  description = Central district response
+}
+object "sector : IncidentGroup" as sector {
+  description = Industrial sector response
+}
+object "fire : IncidentGroup" as fire {
+  description = Power-plant fire incident
+}
+object "auditedRescue : AuditDispatchDecorator" as audited
+object "priorityRescue : PriorityDispatchDecorator" as priority {
+  priorityLabel = P1 - trapped workers
+}
+object "rescueAmbulance : dispatchAmbulance" as ambulance {
+  description = Rescue ambulance to turbine hall
+}
+object "dispatchAudit : EmergencyAuditLog" as log
+object "existingSnapshot : DepthFirstIterator" as snapshot {
+  membership = [fire engine, audited rescue]
+}
+
+command *-- district : owns
+district *-- sector : owns
+sector *-- fire : owns
+fire *-- audited : owns
+audited *-- priority : wraps/owns
+priority *-- ambulance : wraps/owns
+audited --> log : records dispatches
+snapshot --> audited : captured pointer
+
+note bottom of fire
+  Command -> district -> sector -> incident
+  provides three group levels before vehicles.
+end note
+@enduml

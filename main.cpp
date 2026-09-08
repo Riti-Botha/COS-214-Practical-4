@@ -24,7 +24,9 @@ void printTraversal(const std::string& heading, TaskIterator* iterator) {
     }
 }
 
-void scenarioOne(EmergencyTask* cityEmergencyManager, EmergencyAuditLog& auditLog) {
+void scenarioOne(EmergencyTask* cityEmergencyManager,
+                 IncidentGroup* powerPlantFire,
+                 EmergencyAuditLog& auditLog) {
     std::cout << "\n=== Scenario 1: coordinated power-plant fire response ===" << std::endl;
     std::cout << "The city manager dispatches a nested incident hierarchy." << std::endl;
 
@@ -32,8 +34,8 @@ void scenarioOne(EmergencyTask* cityEmergencyManager, EmergencyAuditLog& auditLo
 
     printTraversal("\nDepth-first incident view:",
                    cityEmergencyManager->createIterator());
-    printTraversal("\nReverse incident view:",
-                   cityEmergencyManager->createReverseIterator());
+    printTraversal("\nReverse direct-unit view of the power-plant incident:",
+                   powerPlantFire->createReverseIterator());
 
     std::cout << "\nAudit trail for the stacked dispatch decorators:" << std::endl;
     auditLog.writeTo(std::cout);
@@ -84,19 +86,23 @@ void scenarioTwo(IncidentGroup* powerPlantFire, EmergencyAuditLog& auditLog) {
                    powerPlantFire->createIterator());
     std::cout << "\nDispatching the updated power-plant incident:" << std::endl;
     powerPlantFire->sendOut();
+}
 
+void scenarioThree() {
+    std::cout << "\n=== Scenario 3: ambulance lifecycle and transition safety ==="
+              << std::endl;
+    dispatchAmbulance responseUnit("Emergency evaluation ambulance");
 
+    std::cout << "Initial lifecycle state: " << responseUnit.getStateName() << std::endl;
+    responseUnit.complete();  // invalid: the unit has not been dispatched
+    responseUnit.dispatch();
+    responseUnit.dispatch();  // invalid: duplicate dispatch
+    responseUnit.arrive();
+    responseUnit.arrive();
+    responseUnit.cancel();    // invalid: the unit is already committed on scene
+    responseUnit.complete();
 
-    dispatchAmbulance testUnit("Emergency evaluation unit");
-
-    testUnit.dispatch();
-    testUnit.arrive();
-    testUnit.arrive();
-
-    testUnit.cancel();
-
-
-    testUnit.complete();
+    std::cout << "Final lifecycle state: " << responseUnit.getStateName() << std::endl;
 }
 
 }  // namespace
@@ -121,48 +127,9 @@ int main() {
         centralDistrict->add(industrialSector);
         cityEmergencyManager->add(centralDistrict);
 
-        scenarioOne(cityEmergencyManager, auditLog);
+        scenarioOne(cityEmergencyManager, powerPlantFire, auditLog);
         scenarioTwo(powerPlantFire, auditLog);
-
-        // addded in some calls for code coverage
-        dispatchAmbulance stateTest1("State rejection");
-        stateTest1.arrive();
-        stateTest1.complete();
-        stateTest1.cancel();
-        stateTest1.dispatch();
-        stateTest1.arrive();
-        stateTest1.complete();
-        stateTest1.cancel();
-
-        dispatchAmbulance stateTest2("State progression");
-        stateTest2.dispatch();
-        stateTest2.dispatch();
-        stateTest2.complete();
-        stateTest2.arrive();
-        stateTest2.dispatch();
-        stateTest2.complete();
-        stateTest2.arrive();
-        stateTest2.arrive();
-        stateTest2.complete();
-        stateTest2.dispatch();
-        stateTest2.arrive();
-        stateTest2.complete();
-        stateTest2.cancel();
-
-
-        dispatchAmbulance* unitToRemove = new dispatchAmbulance("Removet");
-        cityEmergencyManager->add(unitToRemove);
-        cityEmergencyManager->remove(unitToRemove);
-
-        PriorityDispatchDecorator* decTest = new PriorityDispatchDecorator(new dispatchAmbulance("Deco"), "2");
-        decTest->add(nullptr);
-        decTest->remove(nullptr);
-        delete decTest->createIterator();
-        delete decTest->createReverseIterator();
-        delete decTest;
-
-        // tests end
-
+        scenarioThree();
 
         delete cityEmergencyManager;
         std::cout << "\nTaskForge emergency response scenarios completed successfully." << std::endl;

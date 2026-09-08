@@ -1,0 +1,74 @@
+@startuml
+title TaskForge emergency-response class diagram - Member 3 integration
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+abstract class EmergencyTask <<Component>> {
+  #description : string
+  +sendOut() : void
+  +add(task) : void
+  +remove(task) : void
+  +getDescription() : string
+  +createIterator() : TaskIterator*
+  +createReverseIterator() : TaskIterator*
+}
+
+class dispatchAmbulance <<Leaf>> {
+  +sendOut() : void
+}
+
+class IncidentGroup <<Composite>> {
+  -children : vector<EmergencyTask*>
+  +add(task) : void
+  +remove(task) : void
+  +sendOut() : void
+}
+
+abstract class EmergencyTaskDecorator <<Decorator>> {
+  #wrappedTask : EmergencyTask*
+  +sendOut() : void
+}
+
+class PriorityDispatchDecorator <<ConcreteDecorator>> {
+  -priorityLabel : string
+  +sendOut() : void
+}
+
+class AuditDispatchDecorator <<ConcreteDecorator>> {
+  -auditLog : EmergencyAuditLog*
+  +sendOut() : void
+}
+
+class EmergencyAuditLog {
+  -entries : vector<string>
+  +record(entry) : void
+  +writeTo(output) : void
+}
+
+interface TaskIterator <<Iterator>> {
+  +first() : void
+  +next() : void
+  +isDone() : bool
+  +currentItem() : EmergencyTask*
+}
+
+class DepthFirstIterator <<ConcreteIterator>>
+class ReverseIterator <<ConcreteIterator>>
+
+EmergencyTask <|-- dispatchAmbulance
+EmergencyTask <|-- IncidentGroup
+EmergencyTask <|-- EmergencyTaskDecorator
+EmergencyTaskDecorator <|-- PriorityDispatchDecorator
+EmergencyTaskDecorator <|-- AuditDispatchDecorator
+IncidentGroup "1" *-- "0..*" EmergencyTask : owns
+EmergencyTaskDecorator "1" *-- "1" EmergencyTask : wraps/owns
+AuditDispatchDecorator "0..*" --> "1" EmergencyAuditLog : records in
+TaskIterator <|.. DepthFirstIterator
+TaskIterator <|.. ReverseIterator
+IncidentGroup ..> TaskIterator : creates
+
+note right of EmergencyTaskDecorator
+  Decorators preserve the EmergencyTask
+  interface and may be stacked at runtime.
+end note
+@enduml
